@@ -361,22 +361,23 @@ class RoadProcessing(object):
     def PointCollection_Front(self):
         with open('Front_Waypoints.txt', 'w') as f:
             self.points_front =np.zeros((len(self.waypoint_front),2))
-            count_front=0
+            count_front = 0
             for w in self.waypoint_front:
                 point = w.transform.location
                 #print("This is point in the transform front: ", point)
                 x_cor = point.x
                 y_cor = point.y
-                self.points_front[count_front][:] = [x_cor, y_cor]
                 count_front = count_front + 1
+                #self.points_front[count_front][:] = [x_cor, y_cor]
                 f.write("%f %f\n" %(x_cor, y_cor))
                 #w_front.append([x_cor,y_cor])
+        self.number_of_front_waypoints = len(self.waypoint_front)
         MAP_front = eng.data_processing(True)          # True for Front Waypoints, False for rear waypoints
         #print("This is property of MAP Front",dir(MAP_front.items))
         self.s_front = eng.getfield(MAP_front, "s_int")
         self.xy_front = eng.getfield(MAP_front, "xy")
-        self.Heading_front = eng.getfield(MAP_front, "Heading")
-        self.Curvature_front = eng.getfield(MAP_front, "Curvature")
+        self.Heading_front = eng.getfield(MAP_front, "pol_Th")
+        self.Curvature_front = eng.getfield(MAP_front, "pol_dTh")
 
     def PointCollection_Rear(self):
         with open('Rear_Waypoints.txt', 'w') as f:
@@ -408,9 +409,6 @@ def get_font():
     font = default_font if default_font in fonts else fonts[0]
     font = pygame.font.match_font(font)
     return pygame.font.Font(font, 14)
-
-def plotting_road(Road_Object):
-    
 
 def should_quit():
     for event in pygame.event.get():
@@ -446,8 +444,6 @@ def main():
         start_pose = map.get_spawn_points()[1]
         waypoint = map.get_waypoint(start_pose.location)
 
-
-
         blueprint_library = world.get_blueprint_library()
 
         vehicle = world.spawn_actor(
@@ -472,6 +468,7 @@ def main():
 
 
         with CarlaSyncMode(world,camera_spectator,Simulation.camera,Simulation.camera_rear, fps=30) as sync_mode:
+            count_for_road_front = 0
             while True:
                 if should_quit():
                     return
@@ -480,6 +477,12 @@ def main():
 
                 Road = RoadProcessing(waypoint)
                 Road.PointCollection_Front()
+                np_xy = np.array(Road.xy_front._data).reshape(Road.xy_front.size, order='F').T
+                #print(np_xy)
+                #if np_xy.shape[0]>0:
+                #    plt.plot(np_xy[1],np_xy[0])
+                #    plt.show(block=False)
+                #    plt.show()
 
 
                 waypoint = random.choice(waypoint.next(0.5))
@@ -507,7 +510,7 @@ def main():
                 draw_image(display, image_spectator)
                 image_for_lane_detection = LaneDetection.make_image_ready(image_front)
                 lane_detected_image = LaneDetection.process_image(image_for_lane_detection)
-                cv2.imshow("Lane Detected Image", lane_detected_image)
+                cv2.imshow("Lane Detected Image Front", lane_detected_image)
 
                 image_for_lane_detection_rear = LaneDetection.make_image_ready(image_rear)
                 lane_detected_image_rear = LaneDetection.process_image(image_for_lane_detection_rear)

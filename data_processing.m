@@ -21,7 +21,7 @@ function MAP = data_processing(Front)
     %             keyboard
     %         end
         % inizia la function
-        [~,pos] = min(abs(mid.s-s_val)); % punto giusto, dato che il vettore è monotono
+        [~,pos] = min(abs(mid.s-s_val)); % punto giusto, dato che il vettore ï¿½ monotono
         [~,posN] = min(abs(mid.s-(s_val+hor)));
 
         %% Considero la curva che deve compiere il veicolo
@@ -72,10 +72,13 @@ function MAP = data_processing(Front)
         MAP.pol_Th(ii,:) = pol_Th;
         MAP.pol_dTh(ii,:) = pol_dTh;
     end
-    %figure()
-    %plot(mid.x,mid.y); hold on
-    %scatter(MAP.xy(:,1),MAP.xy(:,2),'.')
-    %axis equal
+    %if size(MAP.xy(:,1),1)>40
+        %disp("About to plot figure")
+        %figure()
+        %plot(mid.x,mid.y); hold on
+        %scatter(MAP.xy(:,1),MAP.xy(:,2),'.')
+        %axis equal
+    %end
 end
 
 
